@@ -31,10 +31,12 @@ h1 {
     color: #fff;
     padding: auto;
     height: 50px;
+    position: fixed;
+
 }
 
 .nav ul {
-    display: flex;
+     display: flex;
     justify-content: space-between;
     padding: 10px;
 }
