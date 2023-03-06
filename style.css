@@ -31,7 +31,6 @@ h1 {
     color: #fff;
     padding: auto;
     height: 50px;
-    position: fixed;
 
 }
 
@@ -39,6 +38,8 @@ h1 {
      display: flex;
     justify-content: space-between;
     padding: 10px;
+    position: fixed;
+
 }
 
 .nav li {
