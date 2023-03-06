@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">    <title>Report</title>
+</head>
+<body>
+    <div class="nav">
+        <ul>
+            <li><a href="#home">Giới thiệu</a></li>
+            <li><a href="#PCA">PCA</a></li>
+            <li><a href="#T-SNE">T-SNE</a></li>
+            <li><a href="#Project">Project</a></li>
+        </ul>
+    </div>
+    <br>
+
+    <hr>
+    <div id="home">
+        <h1 class="head">Giới thiệu</h1> <br>
+        <p class="introduce">Điều tất yếu khi làm một dự án Machine learning đó chính là Tiền xử lý (<b>Preprocessing</b>). Và chúng ta luôn phải gặp phải bước trực quan hóa dữ liệu để từ đó phân tích và có thể đưa ra được những mô hình phù hợp để xử lý bài toán ta đặt ra.
+        <br> Ví dụ ta có một bộ dữ liệu về học sinh có hai đặc trưng đó chính là chiều cao và cân nặng, quá đơn giản để trực quan dữ liệu này ta chỉ cần lấy hai trục tương ứng với hai đặc trưng vừa cho rồi thể hiện trên đó bởi các điểm.
+        <br> Vậy giả sử ta thêm một số đặc trưng như là số đo vòng 1 thì sao? Có thể ta sẽ biểu diễn trong không gian ba chiều hay thông minh hơn là sử dụng lại hai chiều vừa làm và tùy chỉnh kích thước của điểm để thể hiện cho độ lớn của vòng 1.
+        <br>
+        Và nếu có thêm nhiều đặc trưng thì ta có thể nghĩ đến việc thêm nhiều thành phần để biểu thị nó như kích thước, màu sắc, độ mờ,... Đây là một ví dụ về trực quan hóa dữ liệu về giá thuê nhà của một bang ở Cali theo bảng đồ:<br><br>
+        <pre>
+            <code>
+        housing.plot(kind = 'scatter', x = 'longitude', y = 'latitude',alpha = 0.1,figsize = (10,7),
+        s = housing['population'] / 100,label = 'population', c = "median_house_value",cmap = plt.get_cmap('jet'),colorbar=True)
+        for area in [50, 100, 150]:
+            plt.scatter([], [], c='k', alpha=0.3, s=area, label=str(area) + ' milion people')
+        plt.legend(scatterpoints = 1,frameon=True, labelspacing=1)
+            </code>
+            </pre>
+        </p> 
+        <br>
+        <p class="introduce">Đây là kết quả:<br> <br>
+            <img src="img/housing.png" class="image"> <br>
+            Nhưng giả sử có nhiều đặc trưng hơn, việc vẽ đồ thị nhiều chiều là vô cùng không khả thi hoặc nếu bạn cứ thêm nhiều thành phần vào thì nó sẽ làm đống dữ liệu đó thành đống bùi nhùi và bạn khó có thể khai thác được gì từ đó.<br> Vậy câu hỏi đặt ra, làm sao để trực quan những dữ liệu khi mà số đặc trưng quá nhiều? Khi đó ta sẽ tìm cách giảm số đặc trưng xuống ít nhất có thể mà hạn chế thất thoát dữ liệu nhiều nhất hay còn gọi là giảm số chiều của dữ liệu (<b>Reduce Dimention</b>).<br> Trong bài viết này mình sẽ sử dụng thuật toán PCA (<b>Principal component analysis</b>) và t-SNE (<b>t-distributed Stochastic Neighbor Embedding</b>) để giảm số chiều của dữ liệu sau đó gom cụm bằng <b>K-means clustering</b>, cuối cùng sẽ trực quan dữ liệu để ta thấy rõ sự phân hóa sau khi giảm chiều, lưu ý sẽ không nói nhiều về toán học mà chỉ nói về cú pháp.<br>
+            Ta sẽ sử dụng bộ Dataset <a href="https://www.kaggle.com/code/sedatparlak/customer-segmentation-with-rfm/data">dữ liệu khách hàng</a> để tiện cho việc xử lý mô hình.
+        </p>
+    <br>
+    </div>
+    <hr>
+    <div id="PCA">
+        <h1 class="head">Principal component analysis</h1> <br>
+        <p class="introduce">Về ý tưởng, PCA là một thuật toán dùng để giảm chiều của bộ dữ liệu tuyến tính - ví dụ như quan hệ về chiều cao và cân nặng. Đây là một đoạn code ví dụ: <br> <br>
+        <pre>
+            <code>
+        from sklearn.decomposition import PCA
+        from sklearn.datasets import load_iris
+        import matplotlib.pyplot as plt
+        # Load dữ liệu iris dataset
+        iris = load_iris()
+        X = iris.data
+        # Khởi tạo mô hình PCA với số thành phần chính là 2
+        pca = PCA(n_components=2)
+        # Fit và chuyển đổi dữ liệu
+        X_pca = pca.fit_transform(X)
+        # In ra số chiều ban đầu và sau khi giảm chiều
+        print("Kích thước của X ban đầu: ", X.shape)
+        print("Kích thước của X sau khi giảm chiều: ", X_pca.shape)
+        # Trực quan hóa dữ liệu
+        plt.scatter(X_pca[:,0],X_pca[:,1])
+        plt.show()
+            </code>
+        </pre>
+        <br>
+        </p>
+        <p class="introduce">Đây là kết quả: <br> <br>
+            <img src="img/pca_ex.png" class="image">
+        </p>
+        <br>
+    </div>
+    <hr>
+    <div id="T-SNE">
+        <h1 class="head">T-distributed Stochastic Neighbor Embedding</h1> <br>
+        <p class="introduce">
+            Khác với, PCA thì T-SNE là thuật toán thường dùng để giảm chiều của bộ dữ liệu phi tuyến tính - như lãi kép. Đây là một đoạn code ví dụ: <br> <br>
+        <pre>
+            <code>
+        from sklearn.manifold import TSNE
+        from sklearn.datasets import load_iris
+        import matplotlib.pyplot as plt
+        # Load dữ liệu iris dataset
+        iris = load_iris()
+        X = iris.data
+        # Khởi tạo mô hình PCA với số thành phần chính là 2
+        tsne = TSNE(n_components=2)
+        # Fit và chuyển đổi dữ liệu
+        X_tsne = tsne.fit_transform(X)
+        # In ra số chiều ban đầu và sau khi giảm chiều
+        print("Kích thước của X ban đầu: ", X.shape)
+        print("Kích thước của X sau khi giảm chiều: ", X_tsne.shape)
+        # Trực quan hóa dữ liệu
+        plt.scatter(X_tsne[:,0],X_tsne[:,1])
+        plt.show()
+            </code>
+        </pre>
+        </p>
+        <br>
+        </p>
+        <p class="introduce">Đây là kết quả: <br> <br>
+            <img src="img/t-ex.png" class="image">
+        </p>
+        <br>
+    </div>
+    <div id="Project">
+        <h1 class="head">Customer_Analysistic Project</h1> <br>
+        <p class="introduce">
+            Thông thường, người phân tích sẽ kết hợp hai phương pháp trên để trực quan hóa được dễ dàng hơn, xin phép bỏ qua các bước tiền xử lý tập dữ liệu mà chỉ chú trọng đến trực quan hóa, code đẩy đủ về Preproceesing có ở link  <a href="#">Github</a>. <br> <br> Ta sẽ giảm số chiều xuống 5 bằng PCA , sau đó dùng t-SNE giảm từ 5 xuống 2: <br> <br>
+        <pre>
+            <code>
+                # PCA 
+                from sklearn.decomposition import PCA
+                pca = PCA(n_components=5)
+                x_pca = pca.fit_transform(ds)
+                x_pca.shape
+
+                # t-SNE
+                from sklearn.manifold import TSNE
+                tsne = TSNE(n_components=2) # Lại chọn đại :)
+                x_tsne = tsne.fit_transform(x_pca)
+                x_tsne.shape
+
+                # Visualization
+
+                plt.scatter(x_tsne[:,0],x_tsne[:,1])
+                plt.xlabel('T-SNE feature 1')
+                plt.ylabel('T-SNE feature 2')
+                plt.show()
+            </code>
+        </pre>
+        </p>
+        <br>
+        </p>
+        <p class="introduce">Đây là kết quả: <br> <br>
+            <img src="img/project_examole.png" class="image">
+        </p>
+        <br>
+        <p class="introduce">Đến đây có thể thấy dữ liệu phân hóa rất rõ ràng, tiếp theo ta có thể sử dụng K-means Clustering để biểu diễn rõ hơn sự phân bố đó: <br> <br>
+            <pre>
+                <code>
+                    # K_mean clustering
+                        from sklearn.cluster import KMeans
+                        kmeans = KMeans(n_clusters = 3) # Kmeans với 3 tâm
+                        kmeans.fit(x_tsne)
+                        labels = kmeans.predict(x_tsne)
+                        center = kmeans.cluster_centers_
+                        print(center)
+                    # In ra tọa độ các tâm
+                    >> array([[ 47.805756  ,   1.0575591 ],[-48.915985  ,   4.86533   ],[ -0.41753447,  -3.9070725 ]], dtype=float32)
+                    
+
+                    # Khoảng cách ơ-clid
+                    def euclid_distance(a,b):
+                        return (a[0] - b[0])**2 + (a[1] - b[1])**2
+                    
+                    # Xem điểm gần tâm nào hơn
+                    def check_nearly(a,b,c):
+                        if a == min(a,b,c):
+                            return 0
+                        elif b == min(a,b,c):
+                            return 1
+                        else:
+                            return 2
+
+                    # Label cho các đối tượng
+                    y_pre = []
+                    for i in range(len(x_tsne)):
+                        a = euclid_distance(x_tsne[i],center[0])
+                        b = euclid_distance(x_tsne[i],center[1])
+                        c = euclid_distance(x_tsne[i],center[2])
+                        y_pre.append(check_nearly(a,b,c))
+                    y_pre = np.asarray(y_pre).reshape(-1,1)
+                </code>
+            </pre>
+            <br> <br>
+            <pre>
+                <code>
+                    # Trực quan hóa
+                    plt.scatter(x_tsne[:,0],x_tsne[:,1],c = y_pre)
+                    plt.xlabel('T-SNE feature 1')
+                    plt.ylabel('T-SNE feature 2')
+                    plt.show()
+                </code>
+            </pre>
+        </p>
+        <br>
+        <p class="introduce">Đây là kết quả: <br> <br>
+            <img src="img/kmean.png" class="image">
+
+        </p>
+        <br>
+    </div>
+    
+    
+        
+        
+    </div>
+</body>
+</html>
